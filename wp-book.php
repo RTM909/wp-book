@@ -14,7 +14,7 @@
  *
  * @wordpress-plugin
  * Plugin Name:       WP Book
- * Plugin URI:        http://localhost/wordpress/wp-admin/wp-book.php
+ * Plugin URI:
  * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
  * Version:           1.0.0
  * Author:            Rahul Mehta
@@ -80,3 +80,121 @@ function run_wp_book() {
 
 }
 run_wp_book();
+
+// plugin prefix = wpb_
+
+// Creates and registers custom post type 'Book'
+function wpb_create_post_type() {
+    register_post_type(
+        'Book',
+        array(
+            'labels' => array(
+                'name'          => __( 'Book' ),
+                'singular_name' => __( 'Book' )
+            ),
+            'public'        => true,
+            'has_archive'   => false,
+            'rewrite'       => array('slug' => 'book'),
+        )
+    );
+}
+add_action('init', 'wpb_create_post_type');
+
+// Create custom hierarchical taxonomy called 'Book category'
+function wpb_create_bookcategory_taxonomy() {
+    $labels = array(
+        'name'              => _x( 'Book categories', 'taxonomy general name' ),
+        'singular_name'     => _x( 'Book category', 'taxonomy singular name' ),
+        'search_items'      => __( 'Search book categories' ),
+        'all_items'         => __( 'All book categories' ),
+        'parent_item'       => __( 'Parent book category' ),
+        'parent_item_colon' => __( 'Parent book category:' ),
+        'edit_item'         => __( 'Edit book category' ),
+        'update_item'       => __( 'Update book category' ),
+        'add_new_item'      => __( 'Add new book category' ),
+        'new_item_name'     => __( 'New book category name' ),
+        'menu_name'         => __( 'Book Category' ),
+    );
+
+    // Register taxonomy
+    $args = array(
+        'labels'                => $labels,
+        'description'           => __( 'types of books' ),
+        'hierarchical'          => true,
+        'public'                => true,
+        'publicly_queryable'    => true,
+        'show_ui'               => true,
+        'show_in_menu'          => true,
+        'show_in_nav_menus'     => true,
+        'show_tagcloud'         => true,
+        'show_in_quick_edit'    => true,
+        'show_admin_column'     => true,
+        'show_in_rest'          => false,
+    );
+    register_taxonomy( 'bookcategory', array('book'), $args );
+}
+add_action('init', 'wpb_create_bookcategory_taxonomy');
+
+// Create custom non-hierarchical taxonomy called 'Book Tag'
+function wpb_create_booktag_taxonomy() {
+    $labels = array(
+        'name'              => _x( 'Book tags', 'taxonomy general name' ),
+        'singular_name'     => _x( 'Book tag', 'taxonomy singular name' ),
+        'search_items'      => __( 'Search book tags' ),
+        'all_items'         => __( 'All book tags' ),
+        'parent_item'       => null,
+        'parent_item_colon' => null,
+        'edit_item'         => __( 'Edit book tag' ),
+        'update_item'       => __( 'Update book tag' ),
+        'add_new_item'      => __( 'Add new book tag' ),
+        'new_item_name'     => __( 'New book tag name' ),
+        'menu_name'         => __( 'Book Tag' ),
+    );
+
+    $args = array(
+        'labels'                => $labels,
+        'description'           => __( 'book tags' ),
+        'hierarchical'          => false,
+        'public'                => true,
+        'publicly_queryable'    => true,
+        'show_ui'               => true,
+        'show_in_menu'          => true,
+        'show_in_nav_menus'     => true,
+        'show_tagcloud'         => true,
+        'show_in_quick_edit'    => true,
+        'show_admin_column'     => true,
+        'show_in_rest'          => false,
+    );
+    register_taxonomy( 'booktag', array('book'), $args );
+}
+add_action('init', 'wpb_create_booktag_taxonomy');
+
+// Create a custom meta box to save book meta information like Author Name, Price, Publisher, Year, Edition, URL, etc.
+function wpb_book_meta_box() {
+    add_meta_box( 'author-book-info', __('Author/Book info'), 'wpb_display_meta_box', 'book', 'side', 'high', null );
+}
+add_action('add_meta_boxes', 'wpb_book_meta_box');
+
+function wpb_display_meta_box( $post ) {
+    include plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-form.php';
+}
+
+// function to save meta data
+function wpb_save_book_meta_data( $post_id ) {
+    if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+    if( $parent_id = wp_is_post_revision( $post_id ) ) {
+        $post_id = $parent_id;
+    }
+    $fields = [
+        'wpb_author',
+        'wpb_publisher',
+        'wpb_date',
+        'wpb_edition'
+    ];
+    foreach ($fields as $field) {
+        if( array_key_exists($field, $_POST) ) {
+            update_post_meta( $post_id, $field, sanitize_text_field($_POST[$field] ) );
+        }
+    }
+}
+add_action( 'save_post', 'wpb_save_book_meta_data');

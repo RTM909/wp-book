@@ -22,7 +22,7 @@
                 id="wpb_author"
                 class="form-control"
                 required="true"
-                value="<?php echo esc_html( sanitize_text_field($result->author_name) ); ?>" />
+                value="<?php if($result){echo esc_html( sanitize_text_field($result->author_name) );} ?>" />
         </div>
         <div>
             <label for="wpb_price">Price:</label>
@@ -33,7 +33,7 @@
                     class="form-control"
                     required="true"
                     step="0.10"
-                    value="<?php echo esc_html( sanitize_text_field($result->price) ); ?>" />
+                    value="<?php if($result){echo esc_html( sanitize_text_field($result->price) );} ?>" />
         </div>
         <div>
             <label for="wpb_publisher">Publisher:</label>
@@ -43,7 +43,7 @@
                 id="wpb_publisher"
                 class="form-control"
                 required="true"
-                value="<?php echo esc_html( sanitize_text_field($result->publisher) ); ?>" />
+                value="<?php if($result){echo esc_html( sanitize_text_field($result->publisher) );} ?>" />
         </div>
         <div>
             <label for="wpb_date">Publishing Month, Year:</label>
@@ -52,7 +52,7 @@
                 name="wpb_date"
                 id="wpb_date"
                 class="form-control"
-                value="<?php echo esc_html( sanitize_text_field($result->year) ); ?>" />
+                value="<?php if($result){echo esc_html( sanitize_text_field($result->year) );} ?>" />
         </div>
         <div>
             <label for="wpb_edition">Edition:</label>
@@ -63,7 +63,7 @@
                 class="form-control"
                 step="0.1"
                 required="true"
-                value="<?php echo esc_attr( sanitize_text_field($result->edition) ); ?>" />
+                value="<?php if($result){echo esc_attr( sanitize_text_field($result->edition) );} ?>" />
         </div>
         <div>
             <label for="wpb_url">URL:</label>
@@ -73,7 +73,7 @@
                     id="wpb_url"
                     class="form-control"
                     required="true"
-                    value="<?php echo esc_url( sanitize_text_field($result->url), true ); ?>" />
+                    value="<?php if($result){echo esc_url( sanitize_text_field($result->url), true );} ?>" />
         </div>
     </form>
 </div>

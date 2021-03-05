@@ -1,4 +1,6 @@
-<?php include plugin_dir_path( __FILE__ ) . 'js/wpb_scripts.js'; ?>
+<?php
+    wp_enqueue_script('wpb-ajax', plugin_dir_url( __FILE__ ) . 'js/wpb-scripts.js', array('jquery'));
+?>
 <div>
     <style scoped>
         .form-control {
@@ -15,6 +17,7 @@
                 name="wpb_author"
                 id="wpb_author"
                 class="form-control"
+                required="true"
                 value="<?php echo esc_attr( get_post_meta( get_the_ID(), 'wpb_author', true ) ); ?>" />
         </div>
         <div>
@@ -24,10 +27,11 @@
                 name="wpb_publisher"
                 id="wpb_publisher"
                 class="form-control"
+                required="true"
                 value="<?php echo esc_attr( get_post_meta( get_the_ID(), 'wpb_publisher', true ) ) ?>" />
         </div>
         <div>
-            <label for="wpb_date">Month, Year:</label>
+            <label for="wpb_date">Publishing Month, Year:</label>
             <input
                 type="month"
                 name="wpb_date"
@@ -42,6 +46,8 @@
                 name="wpb_edition"
                 id="wpb_edition"
                 class="form-control"
+                step="0.1"
+                required="true"
                 value="<?php echo esc_attr( get_post_meta( get_the_ID(), 'wpb_edition', true ) ) ?>" />
         </div>
     </form>

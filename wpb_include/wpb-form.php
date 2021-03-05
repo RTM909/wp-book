@@ -1,5 +1,9 @@
 <?php
     wp_enqueue_script('wpb-ajax', plugin_dir_url( __FILE__ ) . 'js/wpb-scripts.js', array('jquery'));
+
+    global $wpdb;
+    $post_id = $GLOBALS['post_id'];
+    $result = $wpdb->get_row("SELECT * FROM wpb_book_meta WHERE post_id = '$post_id'");
 ?>
 <div>
     <style scoped>
@@ -18,7 +22,18 @@
                 id="wpb_author"
                 class="form-control"
                 required="true"
-                value="<?php echo esc_attr( get_post_meta( get_the_ID(), 'wpb_author', true ) ); ?>" />
+                value="<?php echo esc_html( sanitize_text_field($result->author_name) ); ?>" />
+        </div>
+        <div>
+            <label for="wpb_price">Price:</label>
+            <input
+                    type="number"
+                    name="wpb_price"
+                    id="wpb_price"
+                    class="form-control"
+                    required="true"
+                    step="0.10"
+                    value="<?php echo esc_html( sanitize_text_field($result->price) ); ?>" />
         </div>
         <div>
             <label for="wpb_publisher">Publisher:</label>
@@ -28,7 +43,7 @@
                 id="wpb_publisher"
                 class="form-control"
                 required="true"
-                value="<?php echo esc_attr( get_post_meta( get_the_ID(), 'wpb_publisher', true ) ) ?>" />
+                value="<?php echo esc_html( sanitize_text_field($result->publisher) ); ?>" />
         </div>
         <div>
             <label for="wpb_date">Publishing Month, Year:</label>
@@ -37,7 +52,7 @@
                 name="wpb_date"
                 id="wpb_date"
                 class="form-control"
-                value="<?php echo esc_attr( get_post_meta( get_the_ID(), 'wpb_date', true ) )?>" />
+                value="<?php echo esc_html( sanitize_text_field($result->year) ); ?>" />
         </div>
         <div>
             <label for="wpb_edition">Edition:</label>
@@ -48,7 +63,17 @@
                 class="form-control"
                 step="0.1"
                 required="true"
-                value="<?php echo esc_attr( get_post_meta( get_the_ID(), 'wpb_edition', true ) ) ?>" />
+                value="<?php echo esc_attr( sanitize_text_field($result->edition) ); ?>" />
+        </div>
+        <div>
+            <label for="wpb_url">URL:</label>
+            <input
+                    type="text"
+                    name="wpb_url"
+                    id="wpb_url"
+                    class="form-control"
+                    required="true"
+                    value="<?php echo esc_url( sanitize_text_field($result->url), true ); ?>" />
         </div>
     </form>
 </div>

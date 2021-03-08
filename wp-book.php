@@ -81,9 +81,9 @@ function run_wp_book() {
 }
 run_wp_book();
 
-// plugin prefix = wpb_
-
-// Creates and registers custom post type 'Book'
+/**
+ * Creates and registers custom post type 'Book'
+ */
 function wpb_create_post_type() {
     register_post_type(
         'Book',
@@ -100,7 +100,9 @@ function wpb_create_post_type() {
 }
 add_action('init', 'wpb_create_post_type');
 
-// Create custom hierarchical taxonomy called 'Book category'
+/**
+ * Create custom hierarchical taxonomy called 'Book category'
+ */
 function wpb_create_bookcategory_taxonomy() {
     $labels = array(
         'name'              => _x( 'Book categories', 'taxonomy general name' ),
@@ -116,7 +118,6 @@ function wpb_create_bookcategory_taxonomy() {
         'menu_name'         => __( 'Book Category' ),
     );
 
-    // Register taxonomy
     $args = array(
         'labels'                => $labels,
         'description'           => __( 'types of books' ),
@@ -131,11 +132,14 @@ function wpb_create_bookcategory_taxonomy() {
         'show_admin_column'     => true,
         'show_in_rest'          => false,
     );
+    // Register taxonomy
     register_taxonomy( 'bookcategory', array('book'), $args );
 }
 add_action('init', 'wpb_create_bookcategory_taxonomy');
 
-// Create custom non-hierarchical taxonomy called 'Book Tag'
+/**
+ * Create custom non-hierarchical taxonomy called 'Book Tag'
+ */
 function wpb_create_booktag_taxonomy() {
     $labels = array(
         'name'              => _x( 'Book tags', 'taxonomy general name' ),
@@ -169,7 +173,9 @@ function wpb_create_booktag_taxonomy() {
 }
 add_action('init', 'wpb_create_booktag_taxonomy');
 
-// Create a custom meta box to save book meta information like Author Name, Price, Publisher, Year, Edition, URL, etc.
+/**
+ * Create a custom meta box to save book meta information like Author Name, Price, Publisher, Year, Edition, URL, etc.
+ */
 function wpb_book_meta_box() {
     add_meta_box( 'author-book-info', __('Author/Book info'), 'wpb_display_meta_box', 'book', 'side', 'high', null );
 }
@@ -179,22 +185,66 @@ function wpb_display_meta_box( $post ) {
     include plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-form.php';
 }
 
-// function to save meta data
+//
+/**
+ * function to save meta data
+ * @param int $post_id holds the unique post id of each post
+ * @global int $post_id holds the unique post id of each post
+ */
 function wpb_save_book_meta_data( $post_id ) {
     if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
     if( $parent_id = wp_is_post_revision( $post_id ) ) {
         $post_id = $parent_id;
     }
-    $fields = [
-        'wpb_author',
-        'wpb_publisher',
-        'wpb_date',
-        'wpb_edition'
-    ];
-    foreach ($fields as $field) {
-        if( array_key_exists($field, $_POST) ) {
-            update_post_meta( $post_id, $field, sanitize_text_field($_POST[$field] ) );
+
+    $GLOBALS['post_id'] = $post_id;
+
+    if(isset( $_POST['wpb_author'] ))
+    {
+        $author_name    = $_POST['wpb_author'];
+        $price          = $_POST['wpb_price'];
+        $publisher      = $_POST['wpb_publisher'];
+        $year           = $_POST['wpb_date'];
+        $edition        = $_POST['wpb_edition'];
+        $url            = $_POST['wpb_url'];
+
+        global $wpdb;
+        $args = array(
+            'author_name'   => $author_name,
+            'post_id'       => $post_id,
+            'price'         => $price,
+            'publisher'     => $publisher,
+            'year'          => $year,
+            'edition'       => $edition,
+            'url'           => $url);
+
+        $count = $wpdb->get_var("SELECT COUNT(*) FROM wpb_book_meta WHERE post_id = '$post_id'");
+        if ($count == 1) {
+            $wpdb->update('wpb_book_meta', $args, array('post_id' => $post_id));
+        } else {
+            $wpdb->insert('wpb_book_meta', $args);
         }
     }
 }
 add_action( 'save_post', 'wpb_save_book_meta_data');
+
+/**
+ * Creates custom meta table 'wpb_book_meta'
+ */
+function wpb_create_custom_meta_table() {
+    $table_name = 'wpb_book_meta';
+    require_once ( ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta(
+            "CREATE TABLE $table_name (
+          ID bigint(20) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          post_id int(10) NOT NULL,
+          author_name varchar(60) NOT NULL DEFAULT '',
+          price decimal(6,2) NOT NULL DEFAULT 0000.00,
+          publisher varchar(100) NOT NULL DEFAULT '',
+          year varchar(20) NOT NULL,
+          edition varchar(5) NOT NULL,
+          url varchar(64) DEFAULT '' NOT NULL
+        ) CHARACTER SET utf8 COLLATE utf8_general_ci;"
+    );
+}
+add_action( 'init', 'wpb_create_custom_meta_table' );

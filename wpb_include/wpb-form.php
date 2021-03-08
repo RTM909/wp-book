@@ -13,7 +13,7 @@
             margin: 5px 0 10px 0;
         }
     </style>
-    <form id="author-book-info" name="author-book-info" method="post" action="">
+    <form id="author-book-info" name="author-book-info" method="post" action="../wp-book.php">
         <div>
             <label for="wpb_author">Author Name:</label>
             <input

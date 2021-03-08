@@ -186,7 +186,7 @@ function wpb_save_book_meta_data( $post_id ) {
 
     $GLOBALS['post_id'] = $post_id;
 
-    if(isset( $_POST ))
+    if(isset( $_POST['wpb_author'] ))
     {
         $author_name = $_POST['wpb_author'];
         $price = $_POST['wpb_price'];
@@ -196,29 +196,20 @@ function wpb_save_book_meta_data( $post_id ) {
         $url = $_POST['wpb_url'];
 
         global $wpdb;
+        $args = array(
+            'author_name' => $author_name,
+            'post_id' => $post_id,
+            'price' => $price,
+            'publisher' => $publisher,
+            'year' => $year,
+            'edition' => $edition,
+            'url' => $url);
 
         $count = $wpdb->get_var("SELECT COUNT(*) FROM wpb_book_meta WHERE post_id = '$post_id'");
         if ($count == 1) {
-            $wpdb->update('wpb_book_meta', array(
-                'author_name' => $author_name,
-                'post_id' => $post_id,
-                'price' => $price,
-                'publisher' => $publisher,
-                'year' => $year,
-                'edition' => $edition,
-                'url' => $url),
-                array('post_id' => $post_id)
-            );
+            $wpdb->update('wpb_book_meta', $args, array('post_id' => $post_id));
         } else {
-            $wpdb->insert('wpb_book_meta', array(
-                    'author_name' => $author_name,
-                    'post_id' => $post_id,
-                    'price' => $price,
-                    'publisher' => $publisher,
-                    'year' => $year,
-                    'edition' => $edition,
-                    'url' => $url)
-            );
+            $wpdb->insert('wpb_book_meta', $args);
         }
     }
 }

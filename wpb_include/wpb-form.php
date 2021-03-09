@@ -12,8 +12,21 @@
             width: 100%;
             margin: 5px 0 10px 0;
         }
+        .row {
+            display: flex;
+        }
+        input:disabled {
+            height: fit-content;
+            margin-top: 5px;
+            margin-right: 5px;
+            width: 30px;
+            background-color: grey;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
     </style>
-    <form id="author-book-info" name="author-book-info" method="post" action="../wp-book.php">
+    <form id="author-book-info" name="author-book-info" method="post" action="">
         <div>
             <label for="wpb_author">Author Name:</label>
             <input
@@ -26,14 +39,17 @@
         </div>
         <div>
             <label for="wpb_price">Price:</label>
-            <input
-                    type="number"
-                    name="wpb_price"
-                    id="wpb_price"
-                    class="form-control"
-                    required="true"
-                    step="0.10"
-                    value="<?php if($result){echo esc_html( sanitize_text_field($result->price) );} ?>" />
+            <div class="row">
+                <input type="text" value="<?php echo esc_attr( get_option('currency') ); ?>" disabled>
+                <input
+                        type="number"
+                        name="wpb_price"
+                        id="wpb_price"
+                        class="form-control"
+                        required="true"
+                        step="0.10"
+                        value="<?php if($result){echo esc_html( sanitize_text_field($result->price) );} ?>" />
+            </div>
         </div>
         <div>
             <label for="wpb_publisher">Publisher:</label>

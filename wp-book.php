@@ -90,7 +90,8 @@ function wpb_create_post_type() {
         array(
             'labels' => array(
                 'name'          => __( 'Book' ),
-                'singular_name' => __( 'Book' )
+                'singular_name' => __( 'Book' ),
+                'menu_name'     => __( 'Books' )
             ),
             'public'        => true,
             'has_archive'   => false,
@@ -226,7 +227,7 @@ function wpb_save_book_meta_data( $post_id ) {
         }
     }
 }
-add_action( 'save_post', 'wpb_save_book_meta_data');
+add_action( 'save_post', 'wpb_save_book_meta_data' );
 
 /**
  * Creates custom meta table 'wpb_book_meta'
@@ -248,3 +249,9 @@ function wpb_create_custom_meta_table() {
     );
 }
 add_action( 'init', 'wpb_create_custom_meta_table' );
+
+/**
+ * Add sub menu page to the custom post type Book
+ */
+
+include plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-book-settings.php';

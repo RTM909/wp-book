@@ -81,6 +81,10 @@ function run_wp_book() {
 }
 run_wp_book();
 
+// Global includes
+
+// -------------------
+
 /**
  * Creates and registers custom post type 'Book'
  */
@@ -98,6 +102,7 @@ function wpb_create_post_type() {
             'rewrite'       => array('slug' => 'book'),
         )
     );
+   
 }
 add_action('init', 'wpb_create_post_type');
 
@@ -183,7 +188,7 @@ function wpb_book_meta_box() {
 add_action('add_meta_boxes', 'wpb_book_meta_box');
 
 function wpb_display_meta_box( $post ) {
-    include plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-form.php';
+    include_once plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-form.php';
 }
 
 //
@@ -193,12 +198,12 @@ function wpb_display_meta_box( $post ) {
  * @global int $post_id holds the unique post id of each post
  */
 function wpb_save_book_meta_data( $post_id ) {
+    include_once plugin_dir_path( __FILE__ ) . '/wpb_include/class/wpb_book_meta_db.php';
+    $wpb_book_meta_db = new wpb_book_meta_db;
     if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
     if( $parent_id = wp_is_post_revision( $post_id ) ) {
         $post_id = $parent_id;
     }
-
-    $GLOBALS['post_id'] = $post_id;
 
     if(isset( $_POST['wpb_author'] ))
     {
@@ -217,13 +222,13 @@ function wpb_save_book_meta_data( $post_id ) {
             'publisher'     => $publisher,
             'year'          => $year,
             'edition'       => $edition,
-            'url'           => $url);
-
-        $count = $wpdb->get_var("SELECT COUNT(*) FROM wpb_book_meta WHERE post_id = '$post_id'");
-        if ($count == 1) {
-            $wpdb->update('wpb_book_meta', $args, array('post_id' => $post_id));
+            'url'           => $url
+        );
+        $result = $wpb_book_meta_db->get_by('post_id', $post_id);
+        if ($result) {
+            $wpb_book_meta_db->update($post_id, $args, 'post_id');
         } else {
-            $wpdb->insert('wpb_book_meta', $args);
+            $wpb_book_meta_db->insert($args);
         }
     }
 }
@@ -233,25 +238,28 @@ add_action( 'save_post', 'wpb_save_book_meta_data' );
  * Creates custom meta table 'wpb_book_meta'
  */
 function wpb_create_custom_meta_table() {
-    $table_name = 'wpb_book_meta';
-    require_once ( ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta(
-            "CREATE TABLE $table_name (
-          ID bigint(20) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-          post_id int(10) NOT NULL,
-          author_name varchar(60) NOT NULL DEFAULT '',
-          price decimal(6,2) NOT NULL DEFAULT 0000.00,
-          publisher varchar(100) NOT NULL DEFAULT '',
-          year varchar(20) NOT NULL,
-          edition varchar(5) NOT NULL,
-          url varchar(64) DEFAULT '' NOT NULL
-        ) CHARACTER SET utf8 COLLATE utf8_general_ci;"
-    );
+    include_once plugin_dir_path( __FILE__ ) . '/wpb_include/class/wpb_book_meta_db.php';
+    $wpb_book_meta_db = new wpb_book_meta_db;
+    $wpb_book_meta_db->create_table();
 }
-add_action( 'init', 'wpb_create_custom_meta_table' );
+register_activation_hook( __FILE__, 'wpb_create_custom_meta_table' );
 
 /**
- * Add sub menu page to the custom post type Book
+ * Add sub menu page to the custom post type Book and manage different book settings
  */
+include_once plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-book-settings.php';
 
-include plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-book-settings.php';
+/**
+ * Create a shortcode [book] to display the book(s) information. Shortcode attributes should be id, author_name, year, category, tag, and publisher.
+ */
+function wpb_insert_text() {
+	ob_start();
+	include_once plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-book-shortcode-content.php';
+	$content = ob_get_clean();
+	return $content;
+}
+add_shortcode( 'book', 'wpb_insert_text' );
+
+include_once plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-widget-sidebar.php';
+
+include_once plugin_dir_path( __FILE__ ) . 'wpb_include/wpb-widget-dashboard.php';

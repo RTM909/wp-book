@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
  * @since       5.7
  */
-class db_base {
+class wpb_book_meta_db {
 	/**
 	 * The name of our database table
 	 *
@@ -39,7 +39,38 @@ class db_base {
 	 * @access  public
 	 * @since   2.1
 	 */
-	public function __construct() {}
+	public function __construct() {
+        global $wpdb;
+
+        $this->table_name  = 'wpb_book_meta';
+        $this->primary_key = 'ID';
+        $this->version     = '1.0';
+    }
+
+    /**
+     * Create the table
+     *
+     * @access  public
+     * @since   1.0
+    */
+    public function create_table() {
+        global $wpdb;
+
+        require_once ( ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta(
+                "CREATE TABLE $this->table_name (
+                ID bigint(20) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                post_id int(10) NOT NULL,
+                author_name varchar(60) NOT NULL DEFAULT '',
+                price decimal(6,2) NOT NULL DEFAULT 0000.00,
+                publisher varchar(100) NOT NULL DEFAULT '',
+                year varchar(20) NOT NULL,
+                edition varchar(5) NOT NULL,
+                url varchar(64) DEFAULT '' NOT NULL
+                ) CHARACTER SET utf8 COLLATE utf8_general_ci;"
+        );
+        update_option( $this->table_name . '_db_version', $this->version );
+    }
 
 	/**
 	 * Whitelist of columns
@@ -49,7 +80,16 @@ class db_base {
 	 * @return  array
 	 */
 	public function get_columns() {
-		return array();
+		return array(
+            'ID'            => '%d',
+            'post_id'       => '%d',
+            'author_name'   => '%s',
+            'price'         => '%f',
+            'publisher'     => '%s',
+            'year'          => '%s',
+            'edition'       => '%s',
+            'url'           => '%s',
+        );
 	}
 
 	/**
@@ -60,7 +100,16 @@ class db_base {
 	 * @return  array
 	 */
 	public function get_column_defaults() {
-		return array();
+		return array(
+            'ID'            => 0,
+            'post_id'       => '',
+            'author_name'   => '',
+            'price'         => '',
+            'publisher'     => '',
+            'year'          => '',
+            'edition'       => '',
+            'url'           => '',
+        );
 	}
 
 	/**
@@ -72,7 +121,7 @@ class db_base {
 	 */
 	public function get( $row_id ) {
 		global $wpdb;
-		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->table_name WHERE $this->primary_key = %s LIMIT 1;", $row_id ) );
+		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->table_name WHERE $this->primary_key = %d LIMIT 1;", $row_id ) );
 	}
 
 	/**
@@ -85,7 +134,8 @@ class db_base {
 	public function get_by( $column, $row_id ) {
 		global $wpdb;
 		$column = esc_sql( $column );
-		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->table_name WHERE $column = %s LIMIT 1;", $row_id ) );
+		$row_id = esc_sql( $row_id );
+		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->table_name WHERE $column = %d LIMIT 1;", $row_id ) );
 	}
 
 	/**

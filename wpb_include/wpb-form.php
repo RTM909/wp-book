@@ -1,9 +1,13 @@
 <?php
     wp_enqueue_script('wpb-ajax', plugin_dir_url( __FILE__ ) . 'js/wpb-scripts.js', array('jquery'));
 
-    global $wpdb;
-    $post_id = $GLOBALS['post_id'];
-    $result = $wpdb->get_row("SELECT * FROM wpb_book_meta WHERE post_id = '$post_id'");
+    if(isset($_GET['action'])) {
+        // includes
+        include_once plugin_dir_path( __FILE__ ) . '/class/wpb_book_meta_db.php';
+    }
+    $wpb_book_meta_db = new wpb_book_meta_db;
+    $post_id = get_the_ID();
+    $result = $wpb_book_meta_db->get_by( 'post_id', $post_id );
 ?>
 <div>
     <style scoped>
@@ -19,6 +23,7 @@
             height: fit-content;
             margin-top: 5px;
             margin-right: 5px;
+            padding-left: 10px;
             width: 30px;
             background-color: grey;
             color: white;
